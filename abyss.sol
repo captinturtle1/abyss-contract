@@ -22,12 +22,13 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         ".png"
     ];
 
-    uint256 public constant ogTokenEnd = 12;
+    uint256 public constant ogTokenEnd = 10;
     uint256 public maxSupply = 50;
     uint256 public price = 0.15 ether;
     uint256 public renewPrice = 0.08 ether;
     uint256 public currentOgMinted;
     uint256 public currentRegularMinted;
+    uint256 public maxRenewMonths = 3;
 
     mapping(uint256 => uint256) public expireTime;
     mapping(address => bool) public hasMinted;
@@ -90,21 +91,28 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         uint256 cost = renewPrice * _months;
         require(msg.value == cost, "Invalid funds provided");
         require(_exists(_tokenId), "Token does not exist.");
+        require(_months <= maxRenewMonths, "Too many months");
 
         uint256 _currentexpireTime = expireTime[_tokenId];
 
         if (_tokenId <= ogTokenEnd) {
             // og renew
             if (block.timestamp > _currentexpireTime) {
+                // if pass is already expired
                 expireTime[_tokenId] = block.timestamp + (_months * 45 days);
             } else {
+                // if pass is not already expired
+                require(expireTime[_tokenId] + (_months * 45 days) <= block.timestamp + (maxRenewMonths * 45 days), "Surpasses expire limit");
                 expireTime[_tokenId] += 45 days;
             }
         } else {
             // regular renew
             if (block.timestamp > _currentexpireTime) {
+                // if pass is already expired
                 expireTime[_tokenId] = block.timestamp + (_months * 30 days);
             } else {
+                // if pass is not already expired
+                require(expireTime[_tokenId] + (_months * 30 days) <= block.timestamp + (maxRenewMonths * 30 days), "Surpasses expire limit");
                 expireTime[_tokenId] += 30 days;
             }
         }
@@ -140,6 +148,10 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
 
     function setRenewPrice(uint256 _renewPrice) external onlyOwner {
         renewPrice = _renewPrice;
+    }
+
+    function setMaxRenewMonths(uint256 _maxRenewMonths) external onlyOwner {
+        maxRenewMonths = _maxRenewMonths;
     }
 
     function ownerMintRegular(address _receiver) public onlyOwner {
