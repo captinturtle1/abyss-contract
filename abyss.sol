@@ -24,7 +24,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
 
     uint256 public constant ogTokenEnd = 10;
     uint256 public maxSupply = 50;
-    uint256 public price = 0.15 ether;
+    uint256 public price = 0.08 ether;
     uint256 public renewPrice = 0.08 ether;
     uint256 public currentOgMinted;
     uint256 public currentRegularMinted;
@@ -34,6 +34,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     mapping(address => bool) public hasMinted;
 
     bool public privateSale = false;
+    bool public canRenew = true;
 
     bytes32 merkleRoot;
     bytes32 merkleRootOG;
@@ -87,6 +88,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     }
 
     function renewPass(uint256 _tokenId, uint256 _months) public payable {
+        require(canRenew);
         require(tx.origin == msg.sender, "No contracts");
         uint256 cost = renewPrice * _months;
         require(msg.value == cost, "Invalid funds provided");
@@ -124,6 +126,10 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     // only owner
     function setPrivateSale(bool _state) external onlyOwner {
         privateSale = _state;
+    }
+
+    function setCanRenew(bool _state) external onlyOwner {
+        canRenew = _state;
     }
 
     function setMetadataParts(string[] memory metadataParts_) external onlyOwner {
@@ -241,7 +247,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         uint256 _currentexpiryTime = expireTime[tokenId];
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token.");
 
-        string[7] memory parts;
+        string[3] memory parts;
         parts[0] = tokenId <= ogTokenEnd ? (_currentexpiryTime > block.timestamp ? metadataParts[2] : metadataParts[3]) : (_currentexpiryTime > block.timestamp ? metadataParts[4] : metadataParts[5]);
         parts[1] = tokenId <= ogTokenEnd ? metadataParts[6] : metadataParts[7];
         parts[2] = _currentexpiryTime > block.timestamp ? metadataParts[8] : metadataParts[9];
