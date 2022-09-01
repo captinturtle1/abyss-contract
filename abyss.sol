@@ -36,8 +36,8 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     bool public privateSale = false;
     bool public canRenew = true;
 
-    bytes32 merkleRoot;
-    bytes32 merkleRootOG;
+    bytes32 public merkleRoot;
+    bytes32 public merkleRootOG;
 
     event passMinted(uint256 tokenId, uint256 _expireTime);
     event passRenewed(uint256 tokenId, uint256 _expireTime);
