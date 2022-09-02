@@ -106,7 +106,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
             } else {
                 // if pass is not already expired
                 require(expireTime[_tokenId] + (_months * 45 days) <= block.timestamp + (maxRenewMonths * 45 days), "Surpasses expire limit");
-                expireTime[_tokenId] += 45 days;
+                expireTime[_tokenId] += (_months * 45 days);
             }
         } else {
             // regular renew
@@ -116,7 +116,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
             } else {
                 // if pass is not already expired
                 require(expireTime[_tokenId] + (_months * 30 days) <= block.timestamp + (maxRenewMonths * 30 days), "Surpasses expire limit");
-                expireTime[_tokenId] += 30 days;
+                expireTime[_tokenId] += (_months * 30 days);
             }
         }
         emit passRenewed(_tokenId, expireTime[_tokenId]);
