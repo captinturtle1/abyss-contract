@@ -94,6 +94,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         require(msg.value == cost, "Invalid funds provided");
         require(_exists(_tokenId), "Token does not exist.");
         require(_months <= maxRenewMonths, "Too many months");
+        require(_months > 0, "Cannot renew 0 months");
         require(msg.sender == ownerOf(_tokenId), "Cannot renew a pass you do not own.");
 
         uint256 _currentexpireTime = expireTime[_tokenId];
