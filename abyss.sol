@@ -11,12 +11,12 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     string[] metadataParts = [
         "OG",
         "Member",
-        "OG Pass #",
-        "Expired OG Pass #",
-        "Member Pass #",
-        "Expired Member Pass #",
-        ".08 Renews for 45 days",
-        ".08 Renews for 30 days",
+        "OG Access Pass ",
+        "Expired OG Access Pass ",
+        "Access Pass ",
+        "Expired Access Pass ",
+        "A private collective of skilled traders and investors navigating the web3 space. OG membership passes grant access to all community benefits while active as well as additional benefits exclusive to OG holders. Each OG membership runs on a 45 day renewal system and can be managed at anytime via our dashboard.",
+        "A private collective of skilled traders and investors navigating the web3 space. Membership passes grant access to all community benefits while active. Each membership runs on a 30 day renewal system and can be managed at anytime via our dashboard.",
         "ipfs://dsfajsdf/",
         "ipfs://31212837/",
         ".png"
@@ -42,7 +42,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     event passMinted(uint256 tokenId, uint256 _expireTime);
     event passRenewed(uint256 tokenId, uint256 _expireTime);
 
-    constructor() ERC721("Abyss", "ABYSS") {
+    constructor() ERC721("The Abyss", "ABYSS") {
     }
 
     function whitelistMint(bytes32[] calldata _merkleProof) external payable {
