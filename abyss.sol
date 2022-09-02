@@ -51,7 +51,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
         require(tx.origin == msg.sender, "No contracts");
         require(!hasMinted[msg.sender], "Already minted");
-        require(1 * price == msg.value, "Invalid funds provided");
+        require(price == msg.value, "Invalid funds provided");
 
         bytes32 node = keccak256(abi.encodePacked(msg.sender));
         require(
@@ -62,7 +62,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         currentRegularMinted++;
         hasMinted[msg.sender] = true;
         expireTime[nextToMint] = block.timestamp + 30 days;
-        _safeMint(msg.sender, nextToMint);
+        _mint(msg.sender, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
@@ -72,7 +72,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         require(ogTokenEnd >= currentOgMinted + 1, "Exceeds max OG supply");
         require(tx.origin == msg.sender, "No contracts");
         require(!hasMinted[msg.sender], "Already minted");
-        require(1 * price == msg.value, "Invalid funds provided");
+        require(price == msg.value, "Invalid funds provided");
 
         bytes32 node = keccak256(abi.encodePacked(msg.sender));
         require(
@@ -83,11 +83,11 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         currentOgMinted++;
         hasMinted[msg.sender] = true;
         expireTime[nextToMint] = block.timestamp + 45 days;
-        _safeMint(msg.sender, nextToMint);
+        _mint(msg.sender, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
-    function renewPass(uint256 _tokenId, uint256 _months) public payable {
+    function renewPass(uint256 _tokenId, uint256 _months) external payable {
         require(canRenew);
         require(tx.origin == msg.sender, "No contracts");
         uint256 cost = renewPrice * _months;
@@ -105,7 +105,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
                 expireTime[_tokenId] = block.timestamp + (_months * 45 days);
             } else {
                 // if pass is not already expired
-                require(expireTime[_tokenId] + (_months * 45 days) <= block.timestamp + (maxRenewMonths * 45 days), "Surpasses expire limit");
+                require(expireTime[_tokenId] + (_months * 45 days) <= block.timestamp + (maxRenewMonths * 45 days), "Surpasses renew limit");
                 expireTime[_tokenId] += (_months * 45 days);
             }
         } else {
@@ -115,7 +115,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
                 expireTime[_tokenId] = block.timestamp + (_months * 30 days);
             } else {
                 // if pass is not already expired
-                require(expireTime[_tokenId] + (_months * 30 days) <= block.timestamp + (maxRenewMonths * 30 days), "Surpasses expire limit");
+                require(expireTime[_tokenId] + (_months * 30 days) <= block.timestamp + (maxRenewMonths * 30 days), "Surpasses renew limit");
                 expireTime[_tokenId] += (_months * 30 days);
             }
         }
@@ -141,8 +141,8 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         merkleRoot = _merkleRoot;
     }
 
-    function setMerkleRootOG(bytes32 _merkleRoot) external onlyOwner {
-        merkleRootOG = _merkleRoot;
+    function setMerkleRootOG(bytes32 _merkleRootOG) external onlyOwner {
+        merkleRootOG = _merkleRootOG;
     }
 
     function setMaxSupply(uint256 _maxSupply) external onlyOwner {
@@ -161,7 +161,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         maxRenewMonths = _maxRenewMonths;
     }
 
-    function ownerMintRegular(address _receiver) public onlyOwner {
+    function ownerMintRegular(address _receiver) external onlyOwner {
         uint256 nextToMint = ogTokenEnd + currentRegularMinted + 1;
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
         require(tx.origin == msg.sender, "No contracts");
@@ -169,11 +169,11 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         currentRegularMinted++;
         hasMinted[_receiver] = true;
         expireTime[nextToMint] = block.timestamp + 30 days;
-        _safeMint(_receiver, nextToMint);
+        _mint(_receiver, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
-    function ownerMintOG(address _receiver) public onlyOwner {
+    function ownerMintOG(address _receiver) external onlyOwner {
         uint256 nextToMint = currentOgMinted + 1;
         require(ogTokenEnd >= currentOgMinted + 1, "Exceeds max OG supply");
         require(tx.origin == msg.sender, "No contracts");
@@ -181,17 +181,20 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         currentOgMinted++;
         hasMinted[_receiver] = true;
         expireTime[nextToMint] = block.timestamp + 45 days;
-        _safeMint(_receiver, nextToMint);
+        _mint(_receiver, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
     function ownerRenew(uint256 _tokenId, uint256 _days) external onlyOwner {
+        require(tx.origin == msg.sender, "No contracts");
         require(_exists(_tokenId), "Token does not exist.");
         uint256 _currentexpiryTime = expireTime[_tokenId];
 
         if (block.timestamp > _currentexpiryTime) {
+            // if pass is expired
             expireTime[_tokenId] = block.timestamp + (_days * 1 days);
         } else {
+            // if pass isn't expired
             expireTime[_tokenId] += (_days * 1 days);
         }
         emit passRenewed(_tokenId, expireTime[_tokenId]);
@@ -206,7 +209,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         safeTransferFrom(person, _receiver, _tokenId);
     }
 
-    function withdraw() public onlyOwner {
+    function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
         payable(msg.sender).transfer(balance);
     }
@@ -226,6 +229,20 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    function checkPass(uint256 _tokenId) public view returns (bool) {
+        require(_exists(_tokenId), "Token does not exist.");
+        require(expireTime[_tokenId] > block.timestamp, "Pass is expired.");
+
+        return msg.sender == ownerOf(_tokenId) ? true : false;
+    }
+
+    function checkUserWithPass(address _user, uint256 _tokenId) public view returns (bool) {
+        require(_exists(_tokenId), "Token does not exist.");
+        require(expireTime[_tokenId] > block.timestamp, "Pass is expired");
+
+        return _user == ownerOf(_tokenId) ? true : false;
     }
 
     function getMetadata(uint256 _tokenId) internal view returns (string memory) {
