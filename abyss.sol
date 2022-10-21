@@ -11,15 +11,15 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     string[] metadataParts = [
         "OG",
         "Member",
-        "OG Access Pass ",
-        "Expired OG Access Pass ",
-        "Access Pass ",
-        "Expired Access Pass ",
-        "A private collective of skilled traders and investors navigating the web3 space. OG membership passes grant access to all community benefits while active as well as additional benefits exclusive to OG holders. Each OG membership runs on a 45 day renewal system and can be managed at anytime via our dashboard.",
-        "A private collective of skilled traders and investors navigating the web3 space. Membership passes grant access to all community benefits while active. Each membership runs on a 30 day renewal system and can be managed at anytime via our dashboard.",
-        "ipfs://QmfGkqGeWTTQu21ytfHtsqmjBRJie9giEQxa2UBdh7oBmF/",
-        "ipfs://QmfGkqGeWTTQu21ytfHtsqmjBRJie9giEQxa2UBdh7oBmF/",
-        ".png"
+        "OG Membership #",
+        "Expired OG Membership #",
+        "Membership #",
+        "Expired Membership #",
+        "A private collective of skilled traders and investors navigating the web3 space. OG membership passes grant access to all community benefits while active as well as additional benefits exclusive to OG holders. Each OG membership runs on a 45 day renewal system and can be managed at anytime via our dashboard. Artwork by rebelyuzz.",
+        "A private collective of skilled traders and investors navigating the web3 space. Membership passes grant access to all community benefits while active. Each membership runs on a 30 day renewal system and can be managed at anytime via our dashboard. Artwork by rebelyuzz.",
+        "https://www.abyssfnf.com/api/active/",
+        "https://www.abyssfnf.com/api/expired/",
+        ""
     ];
 
     uint256 public constant ogTokenEnd = 10;
