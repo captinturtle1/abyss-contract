@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -17,6 +17,9 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         "Expired Membership #",
         "A private collective of skilled traders and investors navigating the web3 space. OG membership passes grant access to all community benefits while active as well as additional benefits exclusive to OG holders. Each OG membership runs on a 45 day renewal system and can be managed at anytime via our dashboard. Artwork by rebelyuzz.",
         "A private collective of skilled traders and investors navigating the web3 space. Membership passes grant access to all community benefits while active. Each membership runs on a 30 day renewal system and can be managed at anytime via our dashboard. Artwork by rebelyuzz.",
+        "https://www.abyssfnf.com/api/activeGif/",
+        "https://www.abyssfnf.com/api/expiredGif/",
+        "",
         "https://www.abyssfnf.com/api/active/",
         "https://www.abyssfnf.com/api/expired/",
         ""
@@ -198,11 +201,6 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         _safeTransfer(person, _receiver, _tokenId, "");
     }
 
-    function withdraw() external onlyOwner {
-        uint256 balance = address(this).balance;
-        payable(msg.sender).transfer(balance);
-    }
-
     function inactivePassScrubBatch(uint256[] memory _tokenIds, address _receiver) external onlyOwner {
         for (uint256 i = 0; i < _tokenIds.length; i++) {
             require(_exists(_tokenIds[i]), "Token does not exist.");
@@ -264,13 +262,15 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         uint256 _currentexpiryTime = expireTime[tokenId];
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token.");
 
-        string[3] memory parts;
+        string[4] memory parts;
         parts[0] = tokenId <= ogTokenEnd ? (_currentexpiryTime > block.timestamp ? metadataParts[2] : metadataParts[3]) : (_currentexpiryTime > block.timestamp ? metadataParts[4] : metadataParts[5]);
         parts[1] = tokenId <= ogTokenEnd ? metadataParts[6] : metadataParts[7];
         parts[2] = _currentexpiryTime > block.timestamp ? metadataParts[8] : metadataParts[9];
+        parts[3] = _currentexpiryTime > block.timestamp ? metadataParts[11] : metadataParts[12];
 
-        string memory json = Base64.encode(bytes(string(abi.encodePacked('{"name": "',parts[0],'',tokenIdString,'", "description": "',parts[1],'"', getMetadata(tokenId), '"image": "',parts[2],'',tokenIdString,'',metadataParts[10],'"}'))));
-        json = string(abi.encodePacked('data:application/json;base64,', json));
+        string memory s1 = Base64.encode(bytes(string(abi.encodePacked('{"name": "',parts[0],'',tokenIdString,'", "description": "',parts[1],'"', getMetadata(tokenId), '"'))));
+        string memory s2 = Base64.encode(bytes(string(abi.encodePacked('image": "',parts[2],'',tokenIdString,'',metadataParts[10],'", "animation_url": "',parts[3],'',tokenIdString,'',metadataParts[13],'"}'))));
+        string memory json = string(abi.encodePacked('data:application/json;base64,', string.concat(s1, s2)));
         return json;
     }
 
