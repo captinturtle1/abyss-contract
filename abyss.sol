@@ -23,11 +23,9 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     ];
 
     uint256 public constant ogTokenEnd = 10;
-    uint256 public maxSupply = 50;
+    uint256 public maxSupply = 100;
     uint256 public price = 0.08 ether;
     uint256 public renewPrice = 0.08 ether;
-    uint256 public currentOgMinted;
-    uint256 public currentRegularMinted;
     uint256 public maxRenewMonths = 3;
 
     mapping(uint256 => uint256) public expireTime;
@@ -37,7 +35,6 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     bool public canRenew = true;
 
     bytes32 public merkleRoot;
-    bytes32 public merkleRootOG;
 
     event passMinted(uint256 tokenId, uint256 _expireTime);
     event passRenewed(uint256 tokenId, uint256 _expireTime);
@@ -46,7 +43,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     }
 
     function whitelistMint(bytes32[] calldata _merkleProof) external payable {
-        uint256 nextToMint = ogTokenEnd + currentRegularMinted + 1;
+        uint256 nextToMint = totalSupply() + 1;
         require(privateSale, "Private sale not active");
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
         require(tx.origin == msg.sender, "No contracts");
@@ -59,30 +56,8 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
             "Invalid proof"
         );
 
-        currentRegularMinted++;
         hasMinted[msg.sender] = true;
         expireTime[nextToMint] = block.timestamp + 30 days;
-        _mint(msg.sender, nextToMint);
-        emit passMinted(nextToMint, expireTime[nextToMint]);
-    }
-
-    function ogMint(bytes32[] calldata _merkleProof) external payable {
-        uint256 nextToMint = currentOgMinted + 1;
-        require(privateSale, "Private sale not active");
-        require(ogTokenEnd >= currentOgMinted + 1, "Exceeds max OG supply");
-        require(tx.origin == msg.sender, "No contracts");
-        require(!hasMinted[msg.sender], "Already minted");
-        require(price == msg.value, "Invalid funds provided");
-
-        bytes32 node = keccak256(abi.encodePacked(msg.sender));
-        require(
-            MerkleProof.verify(_merkleProof, merkleRootOG, node),
-            "Invalid proof"
-        );
-
-        currentOgMinted++;
-        hasMinted[msg.sender] = true;
-        expireTime[nextToMint] = block.timestamp + 45 days;
         _mint(msg.sender, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
@@ -142,10 +117,6 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         merkleRoot = _merkleRoot;
     }
 
-    function setMerkleRootOG(bytes32 _merkleRootOG) external onlyOwner {
-        merkleRootOG = _merkleRootOG;
-    }
-
     function setMaxSupply(uint256 _maxSupply) external onlyOwner {
         maxSupply = _maxSupply;
     }
@@ -163,25 +134,12 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     }
 
     function ownerMintRegular(address _receiver) external onlyOwner {
-        uint256 nextToMint = ogTokenEnd + currentRegularMinted + 1;
+        uint256 nextToMint = totalSupply() + 1;
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
         require(tx.origin == msg.sender, "No contracts");
 
-        currentRegularMinted++;
         hasMinted[_receiver] = true;
         expireTime[nextToMint] = block.timestamp + 30 days;
-        _mint(_receiver, nextToMint);
-        emit passMinted(nextToMint, expireTime[nextToMint]);
-    }
-
-    function ownerMintOG(address _receiver) external onlyOwner {
-        uint256 nextToMint = currentOgMinted + 1;
-        require(ogTokenEnd >= currentOgMinted + 1, "Exceeds max OG supply");
-        require(tx.origin == msg.sender, "No contracts");
-
-        currentOgMinted++;
-        hasMinted[_receiver] = true;
-        expireTime[nextToMint] = block.timestamp + 45 days;
         _mint(_receiver, nextToMint);
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
