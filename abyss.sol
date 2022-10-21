@@ -144,6 +144,19 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
+    function ownerBatchMintRegular(address[] memory _receivers) external onlyOwner {
+        for (uint256 i = 0; i < _receivers.length; i++) {
+            uint256 nextToMint = totalSupply() + 1;
+            require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
+            require(tx.origin == msg.sender, "No contracts");
+            
+            hasMinted[_receivers[i]] = true;
+            expireTime[nextToMint] = block.timestamp + 30 days;
+            _mint(_receivers[i], nextToMint);
+            emit passMinted(nextToMint, expireTime[nextToMint]);
+        }
+    }
+
     function ownerRenew(uint256 _tokenId, uint256 _days) external onlyOwner {
         require(tx.origin == msg.sender, "No contracts");
         require(_exists(_tokenId), "Token does not exist.");
@@ -159,13 +172,46 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         emit passRenewed(_tokenId, expireTime[_tokenId]);
     }
 
+    function ownerBatchRenew(uint256[] memory _tokenIds, uint256 _days) external onlyOwner {
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            require(tx.origin == msg.sender, "No contracts");
+            require(_exists(_tokenIds[i]), "Token does not exist.");
+            uint256 _currentexpiryTime = expireTime[_tokenIds[i]];
+            
+            if (block.timestamp > _currentexpiryTime) {
+                // if pass is expired
+                expireTime[_tokenIds[i]] = block.timestamp + (_days * 1 days);
+            } else {
+                // if pass isn't expired
+                expireTime[_tokenIds[i]] += (_days * 1 days);
+            }
+            emit passRenewed(_tokenIds[i], expireTime[_tokenIds[i]]);
+        }
+    }
+
     function inactivePassScrub(uint256 _tokenId, address _receiver) external onlyOwner {
         require(_exists(_tokenId), "Token does not exist.");
         uint256 _currentexpiryTime = expireTime[_tokenId];
         require(_currentexpiryTime + 7 days < block.timestamp, "Pass needs to be inactive for 7+ days");
         address person = ownerOf(_tokenId);
 
-        safeTransferFrom(person, _receiver, _tokenId);
+        _safeTransfer(person, _receiver, _tokenId, "");
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
+
+    function inactivePassScrubBatch(uint256[] memory _tokenIds, address _receiver) external onlyOwner {
+        for (uint256 i = 0; i < _tokenIds.length; i++) {
+            require(_exists(_tokenIds[i]), "Token does not exist.");
+            uint256 _currentexpiryTime = expireTime[_tokenIds[i]];
+            require(_currentexpiryTime + 7 days < block.timestamp, "Pass needs to be inactive for 7+ days");
+            address person = ownerOf(_tokenIds[i]);
+
+            _safeTransfer(person, _receiver, _tokenIds[i], "");
+        }
     }
 
     function withdraw() external onlyOwner {
