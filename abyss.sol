@@ -45,7 +45,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
     constructor() ERC721("The Abyss", "ABYSS") {
     }
 
-    function whitelistMint(bytes32[] calldata _merkleProof) external payable {
+    function mint(bytes32[] calldata _merkleProof) external payable {
         uint256 nextToMint = totalSupply() + 1;
         require(privateSale, "Private sale not active");
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
@@ -136,7 +136,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         maxRenewMonths = _maxRenewMonths;
     }
 
-    function ownerMintRegular(address _receiver) external onlyOwner {
+    function ownerMint(address _receiver) external onlyOwner {
         uint256 nextToMint = totalSupply() + 1;
         require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
         require(tx.origin == msg.sender, "No contracts");
@@ -147,7 +147,7 @@ contract abyss is ERC721, ERC721Enumerable, Ownable {
         emit passMinted(nextToMint, expireTime[nextToMint]);
     }
 
-    function ownerBatchMintRegular(address[] memory _receivers) external onlyOwner {
+    function ownerBatchMint(address[] memory _receivers) external onlyOwner {
         for (uint256 i = 0; i < _receivers.length; i++) {
             uint256 nextToMint = totalSupply() + 1;
             require(maxSupply >= totalSupply() + 1, "Exceeds max supply");
